@@ -1,0 +1,24 @@
+QPushButton {
+  color: white;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 5px;
+}
+
+QPushButton#keygenBtn {
+  background-color: #4caf50;
+}
+
+QPushButton#keygenBtn:hover {
+  background-color: #45a049;
+}
+
+QPushButton#quitBtn {
+  background-color: #ff5733;
+}
+
+QPushButton#quitBtn:hover {
+  background-color: #cc462f;
+}

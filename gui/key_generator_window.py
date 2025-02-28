@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 from gui.drive_selection import DriveSelectionWidget
 from gui.pin_pad_dialog import PinPadDialog
+from utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -14,15 +15,18 @@ class KeyGeneratorWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        load_stylesheet(self, "gui/key_gen.css")
         self.setWindowTitle("PAdES Key Generator")
         self.setGeometry(100, 100, 400, 400)
 
         layout = QVBoxLayout()
 
         self.keygen_btn = QPushButton("Generate RSA Keys")
+        self.keygen_btn.setObjectName("keygenBtn")
         self.keygen_btn.clicked.connect(self.open_pin_pad)
 
         self.quit_btn = QPushButton("Quit")
+        self.quit_btn.setObjectName("quitBtn")
         self.quit_btn.clicked.connect(self.close_application)
 
         self.drive_selection_widget = DriveSelectionWidget()
