@@ -21,10 +21,6 @@ QPushButton {
   margin: 5px;
 }
 
-QPushButton:hover {
-  cursor: pointer;
-}
-
 QPushButton#submitBtn {
   background-color: #4caf50;
   color: white;

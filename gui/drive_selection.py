@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QHBoxLayout, QListWidget, QPushButton, QVBoxLayout, QWidget
 
 from drive_manager.drive_manager import DriveManager
+from utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -16,47 +17,16 @@ class DriveSelectionWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        load_stylesheet(self, "gui/driver_selection.css")
         layout = QVBoxLayout()
 
         self.drive_list = QListWidget()
         self.drive_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
-        self.drive_list.setStyleSheet("""
-            QListWidget {
-                font-size: 14px;
-                border: 1px solid #aaa;
-                border-radius: 5px;
-                background-color: #f5f5f5;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-            QListWidget::item {
-                padding: 5px;
-                border-radius: 3px;
-            }
-            QListWidget::item:selected {
-                background-color: #1E90FF;
-                color: white;
-            }
-        """)
         layout.addWidget(self.drive_list)
 
         button_layout = QHBoxLayout()
 
         self.select_btn = QPushButton("Select Drive")
-        self.select_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #007BFF;
-                color: white;
-                font-size: 14px;
-                border: none;
-                border-radius: 5px;
-                padding: 10px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #0056b3;
-            }
-        """)
         self.select_btn.clicked.connect(self.select_drive)
         button_layout.addWidget(self.select_btn)
 

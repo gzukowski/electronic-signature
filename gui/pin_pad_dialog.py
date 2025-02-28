@@ -1,7 +1,8 @@
 import logging
 
-from PyQt6.QtCore import QFile, QTextStream
 from PyQt6.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton, QVBoxLayout
+
+from utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -14,7 +15,7 @@ class PinPadDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.load_stylesheet("gui/style.css")
+        load_stylesheet(self, "gui/pin_pad.css")
 
         self.setWindowTitle("Enter PIN")
         self.setGeometry(200, 200, 350, 400)
@@ -70,11 +71,3 @@ class PinPadDialog(QDialog):
 
     def get_pin(self):
         return self.pin
-
-    def load_stylesheet(self, filename):
-        file = QFile(filename)
-        if file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
-            stream = QTextStream(file)
-            stylesheet = stream.readAll()
-            self.setStyleSheet(stylesheet)
-            file.close()

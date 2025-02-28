@@ -21,15 +21,15 @@ class KeyGeneratorWindow(QWidget):
 
         self.keygen_btn = QPushButton("Generate RSA Keys")
         self.keygen_btn.clicked.connect(self.open_pin_pad)
-        layout.addWidget(self.keygen_btn)
 
         self.quit_btn = QPushButton("Quit")
         self.quit_btn.clicked.connect(self.close_application)
-        layout.addWidget(self.quit_btn)
 
         self.drive_selection_widget = DriveSelectionWidget()
-        layout.addWidget(self.drive_selection_widget)
 
+        layout.addWidget(self.keygen_btn)
+        layout.addWidget(self.quit_btn)
+        layout.addWidget(self.drive_selection_widget)
         self.setLayout(layout)
 
     def open_pin_pad(self):
