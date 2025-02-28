@@ -2,6 +2,8 @@ import logging
 
 from PyQt6.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton, QVBoxLayout
 
+from utils.utils import load_stylesheet
+
 logger = logging.getLogger("global_logger")
 
 class PinPadDialog(QDialog):
@@ -13,31 +15,40 @@ class PinPadDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
+        load_stylesheet(self, "gui/pin_pad.css")
+
         self.setWindowTitle("Enter PIN")
-        self.setGeometry(200, 200, 300, 300)
+        self.setGeometry(200, 200, 350, 400)
 
         layout = QVBoxLayout()
 
         self.pin_display = QLabel("PIN: ")
         layout.addWidget(self.pin_display)
 
-        #PinPad Grid Creation
         grid_layout = QGridLayout()
         for i in range(9):
             button = QPushButton(str(i + 1))
+            button.setObjectName(f"button{i + 1}")
             button.clicked.connect(lambda _, num=i + 1: self.add_number(num))
             grid_layout.addWidget(button, i // 3, i % 3)
 
         layout.addLayout(grid_layout)
 
-        #Submit and Clear buttons
         submit_btn = QPushButton("Submit")
+        submit_btn.setObjectName("submitBtn")
         submit_btn.clicked.connect(self.accept)
-        layout.addWidget(submit_btn)
 
         clear_btn = QPushButton("Clear")
+        clear_btn.setObjectName("clearBtn")
         clear_btn.clicked.connect(self.clear_pin)
+
+        backspace_btn = QPushButton("Backspace")
+        backspace_btn.setObjectName("backspaceBtn")
+        backspace_btn.clicked.connect(self.backspace)
+
+        layout.addWidget(submit_btn)
         layout.addWidget(clear_btn)
+        layout.addWidget(backspace_btn)
 
         self.setLayout(layout)
 
@@ -51,6 +62,12 @@ class PinPadDialog(QDialog):
         self.pin = ""
         self.pin_display.setText("PIN: ")
         logger.info("Cleared pin")
+
+    def backspace(self):
+        if self.pin:
+            self.pin = self.pin[:-1]
+            self.pin_display.setText(f"PIN: {self.pin}")
+            logger.info("Backspace pressed, current PIN: %s", self.pin)
 
     def get_pin(self):
         return self.pin

@@ -1,0 +1,47 @@
+QDialog {
+  background-color: #f2f2f2;
+  border-radius: 10px;
+}
+
+QLabel {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333333;
+  padding: 10px;
+  text-align: center;
+}
+
+QPushButton {
+  background-color: #4caf50;
+  color: white;
+  font-size: 18px;
+  padding: 20px;
+  border-radius: 10px;
+  border: none;
+  margin: 5px;
+}
+
+QPushButton#submitBtn {
+  background-color: #4caf50;
+  color: white;
+}
+
+QPushButton#clearBtn {
+  background-color: #ff5722;
+  color: white;
+}
+
+QPushButton#backspaceBtn {
+  background-color: #ffc107;
+  color: white;
+}
+
+QPushButton#submitBtn,
+QPushButton#clearBtn,
+QPushButton#backspaceBtn {
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  border: none;
+  margin: 10px;
+}
