@@ -12,12 +12,11 @@ class DriveSelectionWidget(QWidget):
     def __init__(self):
         super().__init__()
         logger.info("Drive Selection Widget created")
-        self.selected_drive = None
         self.drive_manager = DriveManager()
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/driver_selection.css")
+        load_stylesheet(self, "gui/css/driver_selection.css")
         layout = QVBoxLayout()
 
         self.drive_list = QListWidget()
@@ -62,7 +61,7 @@ class DriveSelectionWidget(QWidget):
     def select_drive(self):
         selected_item = self.drive_list.selectedItems()
         if selected_item:
-            self.selected_drive = selected_item[0].text()
-            logger.info("Selected drive: %s", self.selected_drive)
+            self.drive_manager.selected_drive = selected_item[0].text()
+            logger.info("Selected drive: %s", self.drive_manager.selected_drive)
         else:
             logger.info("No drive selected")
