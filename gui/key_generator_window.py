@@ -37,6 +37,11 @@ class KeyGeneratorWindow(QWidget):
         self.setLayout(layout)
 
     def open_pin_pad(self):
+        selected_drive = self.drive_selection_widget.drive_manager.get_selected_drive()
+        if not selected_drive:
+            logger.info("No drive selected. Key generation aborted.")
+            return
+
         pin_dialog = PinPadDialog()
         logger.info("Opened PinPad")
         if pin_dialog.exec():
