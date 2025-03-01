@@ -8,6 +8,8 @@ from utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
+DRIVES_REFRESH = 300
+
 class DriveSelectionWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -35,7 +37,7 @@ class DriveSelectionWidget(QWidget):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_drives)
-        self.timer.start(300)
+        self.timer.start(DRIVES_REFRESH)
 
         self.refresh_drives()
 
