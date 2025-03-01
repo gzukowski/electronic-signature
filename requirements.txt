@@ -1,2 +1,4 @@
 ruff
 PyQt5
+psutil
+pycryptodome

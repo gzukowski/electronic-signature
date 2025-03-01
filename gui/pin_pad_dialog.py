@@ -15,7 +15,7 @@ class PinPadDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/pin_pad.css")
+        load_stylesheet(self, "gui/css/pin_pad.css")
 
         self.setWindowTitle("Enter PIN")
         self.setGeometry(200, 200, 350, 400)
