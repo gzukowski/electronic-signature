@@ -2,6 +2,7 @@ import logging
 
 from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
+from gui.drive_selection import DriveSelectionWidget
 from gui.pin_pad_dialog import PinPadDialog
 from utils.utils import load_stylesheet
 
@@ -14,9 +15,9 @@ class SignVerifyWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/sign_and_verify.css")
+        load_stylesheet(self, "gui/css/sign_and_verify.css")
         self.setWindowTitle("PDF Signer & Verifier")
-        self.setGeometry(300, 300, 500, 300)
+        self.setGeometry(100, 100, 400, 500)
 
         layout = QVBoxLayout()
 
@@ -33,6 +34,9 @@ class SignVerifyWindow(QWidget):
         self.quit_button.setObjectName("quitBtn")
         self.quit_button.clicked.connect(self.close)
         layout.addWidget(self.quit_button)
+
+        self.drive_selection_widget = DriveSelectionWidget()
+        layout.addWidget(self.drive_selection_widget)
 
         self.setLayout(layout)
 
