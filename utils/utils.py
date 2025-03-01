@@ -1,11 +1,10 @@
 import logging
+import time
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from PyQt6.QtCore import QFile, QTextStream
-
-import time
 
 logger = logging.getLogger("global_logger")
 
@@ -52,8 +51,8 @@ def generate_rsa_keys(pin, drive_manager, progress_signal=None):
         logger.info("RSA keys saved to USB")
         time.sleep(0.5)
 
-    except Exception as e:
-        logger.error(f"Error during key generation: {e}")
+    except Exception:
+        logger.exception("Error during key generation")
         raise
 
 
