@@ -33,22 +33,9 @@ class DriveManager:
             list[str]: A list of filenames in the specified directory.
 
         """
-        # Error handling should be skipped in the future and moved into the decorator in gui,
-        # in order to catch errors and display messages for users
-        try:
-            files = [file.name for file in Path(path).iterdir() if file.is_file()]
-        except FileNotFoundError:
-            logger.exception("Path not found: %s", path)
-            return []
-        except PermissionError:
-            logger.exception("Permission denied for path: %s", path)
-            return []
-        except Exception:
-            logger.exception("Unexpected error reading files from %s", path)
-            return []
-        else:
-            logger.info("Files in %s: %s", path, files)
-            return files
+        files = [file.name for file in Path(path).iterdir() if file.is_file()]
+        logger.info("Files in %s: %s", path, files)
+        return files
 
     def save_to_drive(self, data: bytes, destination_name: str) -> bool:
         """
@@ -72,21 +59,11 @@ class DriveManager:
 
         destination_path = Path(self.selected_drive) / destination_name
 
-        success = False
-        try:
-            with destination_path.open("wb") as dest:
-                dest.write(data)
+        with destination_path.open("wb") as dest:
+            dest.write(data)
 
-            logger.info("File successfully saved to: %s", destination_path)
-            success = True
+        logger.info("File successfully saved to: %s", destination_path)
 
-        except PermissionError:
-            logger.exception("Permission denied when writing to: %s", destination_path)
-        except OSError:
-            logger.exception("I/O error occurred while writing to: %s", destination_path)
-        except Exception:
-            logger.exception("Unexpected error occurred while saving to: %s", destination_path)
-
-        return success
+        return True
 
 

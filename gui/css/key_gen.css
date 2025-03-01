@@ -22,3 +22,32 @@ QPushButton#quitBtn {
 QPushButton#quitBtn:hover {
   background-color: #cc462f;
 }
+
+QMessageBox {
+  background-color: #333;
+  color: white;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+QMessageBox QLabel {
+  color: white;
+  font-size: 14px;
+}
+
+QMessageBox QPushButton {
+  color: white;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 5px;
+}
+
+QMessageBox QPushButton:hover {
+  background-color: #555;
+}
+
+QMessageBox QPushButton:focus {
+  outline: none;
+}
