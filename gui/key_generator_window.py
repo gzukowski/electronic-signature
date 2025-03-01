@@ -38,6 +38,11 @@ class KeyGeneratorWindow(QWidget):
         layout.addWidget(self.drive_selection_widget)
         self.setLayout(layout)
 
+        layout.addWidget(self.keygen_btn)
+        layout.addWidget(self.quit_btn)
+        layout.addWidget(self.drive_selection_widget)
+        self.setLayout(layout)
+
     def open_pin_pad(self):
         selected_drive = self.drive_selection_widget.drive_manager.selected_drive
         if not selected_drive:
