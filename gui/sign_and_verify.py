@@ -3,6 +3,7 @@ import logging
 from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 from gui.drive_selection import DriveSelectionWidget
+from gui.enums import DriveSelectorMode
 from gui.pin_pad_dialog import PinPadDialog
 from utils.utils import load_stylesheet
 
@@ -35,7 +36,7 @@ class SignVerifyWindow(QWidget):
         self.quit_button.clicked.connect(self.close)
         layout.addWidget(self.quit_button)
 
-        self.drive_selection_widget = DriveSelectionWidget()
+        self.drive_selection_widget = DriveSelectionWidget(DriveSelectorMode.WITH_KEYS)
         layout.addWidget(self.drive_selection_widget)
 
         self.setLayout(layout)

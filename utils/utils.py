@@ -55,4 +55,6 @@ def generate_rsa_keys(pin, drive_manager, progress_signal=None):
         logger.exception("Error during key generation")
         raise
 
+def decrypt_rsa_key(pin, drive_manager, progress_signal=None):
+    pass
 
