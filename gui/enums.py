@@ -5,7 +5,7 @@ class RsaGenState(enum.IntEnum):
     FINISHED = 0
     ERRORED = -1
 
-class RsaDecryptState(enum.IntEnum):
+class SignState(enum.IntEnum):
     FINISHED = 0
     ERRORED = -1
 

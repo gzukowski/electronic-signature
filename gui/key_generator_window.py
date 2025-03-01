@@ -3,7 +3,7 @@ import logging
 from PyQt6.QtWidgets import QMessageBox, QProgressDialog, QPushButton, QVBoxLayout, QWidget
 
 from gui.drive_selection import DriveSelectionWidget
-from gui.enums import DriveSelectorMode, RsaGenState
+from gui.enums import RsaGenState
 from gui.key_generation_thread import KeyGenerationThread
 from gui.pin_pad_dialog import PinPadDialog
 from utils.utils import load_stylesheet
