@@ -99,15 +99,15 @@ def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey
         rsa_key = RSA.import_key(decrypted_key)
 
         if progress_signal:
-            progress_signal.emit("RSA key successfully decrypted!", 100)
+            progress_signal.emit("RSA key successfully decrypted!", 99)
 
         logger.info("RSA key successfully decrypted.")
 
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError):
         logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
     except FileNotFoundError:
         logger.exception("File not found: %s", private_key_path)
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error during RSA key decryption: %s")
 
     if progress_signal:
@@ -159,7 +159,7 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None) -> bool:
         time.sleep(0.5)
         logger.info("PDF File successfully signed: %s", pdf_path)
 
-    except Exception as e:
+    except Exception:
         logger.exception("Error while signing PDF File: %s")
 
 
