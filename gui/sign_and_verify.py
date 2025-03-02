@@ -13,6 +13,7 @@ logger = logging.getLogger("global_logger")
 class SignVerifyWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.selected_pdf = None
         logger.info("Instance of Sign and Verify created")
         self.init_ui()
 
@@ -78,7 +79,8 @@ class SignVerifyWindow(QWidget):
             pin = pin_dialog.get_pin()
             logger.info("PIN: %s", pin)
             self.select_pdf_file()
-            self.start_signing_file(pin)
+            if self.selected_pdf:
+                self.start_signing_file(pin)
 
     def select_pdf_file(self):
         input_pdf_path, _ = QFileDialog.getOpenFileName(self, "Choose PDF file", "", "PDF Files (*.pdf)")
