@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QListWidget, QPushButton, QVBoxLayout, QWidget
 
 from drive_manager.drive_manager import DriveManager
+from gui.enums import DriveSelectorMode
 from utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
@@ -11,10 +12,19 @@ logger = logging.getLogger("global_logger")
 DRIVES_REFRESH = 300
 
 class DriveSelectionWidget(QWidget):
-    def __init__(self):
+    def __init__(self, mode=DriveSelectorMode.STANDARD):
+        """
+        DriveSelectionWidget constructor.
+
+        Args:
+            mode (str): 'STANDARD' - lists all drives, 'WITH_KEYS' - only drives with keys.
+
+        """
         super().__init__()
         logger.info("Drive Selection Widget created")
+        self.mode = mode
         self.drive_manager = DriveManager()
+        self.is_drive_selected = False
         self.init_ui()
 
     def init_ui(self):
@@ -56,11 +66,23 @@ class DriveSelectionWidget(QWidget):
             if item.text() not in connected_drives:
                 self.drive_list.takeItem(self.drive_list.row(item))
 
+        if self.drive_list.count() == 1 and not self.is_drive_selected:
+            self.drive_list.setCurrentRow(0)
+            self.select_drive()
+            self.is_drive_selected = True
+
         logger.info("Drive list refreshed")
 
     def get_connected_drives(self):
-        self.drive_manager.refresh()
-        return self.drive_manager.drive_list
+        drives = []
+
+        if self.mode == DriveSelectorMode.WITH_KEYS:
+            drives = self.drive_manager.list_drives_with_keys()
+        else:
+            self.drive_manager.refresh()
+            drives = self.drive_manager.drive_list
+
+        return drives
 
     def select_drive(self):
         selected_item = self.drive_list.selectedItems()

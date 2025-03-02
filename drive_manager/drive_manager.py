@@ -22,6 +22,18 @@ class DriveManager:
         self.drive_list = [disk.device for disk in psutil.disk_partitions()]
         logger.info("Detected devices: %s", self.drive_list)
 
+    def list_drives_with_keys(self) -> list[str]:
+        """
+        Returns a list of USB drivers with key files
+        """
+        self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
+        self.drive_list = [disk.device for disk in psutil.disk_partitions()]
+
+        return [
+            drive for drive in self.drive_list
+                if all(key in self.read_files(drive) for key in ["private_key.enc", "public_key.key"])
+        ]
+
     def read_files(self, path: str) -> list[str]:
         """
         Reads all files from the specified disk path.
