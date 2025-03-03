@@ -1,8 +1,7 @@
 import logging
 
-from PyQt6.QtCore import QThread, pyqtSignal
-
 from gui.enums import SignState
+from PyQt6.QtCore import QThread, pyqtSignal
 from utils.utils import decrypt_rsa_key, sign_pdf
 
 logger = logging.getLogger("global_logger")

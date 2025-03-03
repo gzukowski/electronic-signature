@@ -1,11 +1,14 @@
 import logging
+import sys
+from pathlib import Path
 
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QListWidget, QPushButton, QVBoxLayout, QWidget
 
-from drive_manager.drive_manager import DriveManager
-from gui.enums import DriveSelectorMode
-from utils.utils import load_stylesheet
+from common.drive_manager.drive_manager import DriveManager
+from common.gui.enums import DriveSelectorMode
+from common.utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -28,7 +31,7 @@ class DriveSelectionWidget(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/css/driver_selection.css")
+        load_stylesheet(self, "common/gui/css/driver_selection.css")
         layout = QVBoxLayout()
 
         self.selected_drive_label = QLabel("No drive selected.")

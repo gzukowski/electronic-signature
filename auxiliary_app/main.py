@@ -1,12 +1,16 @@
 import sys
+from pathlib import Path
 
 from PyQt6.QtWidgets import QApplication
 
-from drive_manager.drive_manager import DriveManager
-from gui.key_generator_window import KeyGeneratorWindow
-from logger.logger import initialize
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-logger = initialize()
+from gui.key_generator_window import KeyGeneratorWindow
+
+from common.drive_manager.drive_manager import DriveManager
+from common.logger.logger import AUXILIARY_LOG_FILE, initialize
+
+logger = initialize(AUXILIARY_LOG_FILE)
 
 if __name__ == "__main__":
     dev_manager = DriveManager()
@@ -16,4 +20,3 @@ if __name__ == "__main__":
     window = KeyGeneratorWindow()
     window.show()
     sys.exit(app.exec())
-

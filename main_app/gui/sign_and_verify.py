@@ -1,12 +1,13 @@
 import logging
 
+from gui.enums import SignState
+from gui.sign_thread import SignThread
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QPushButton, QVBoxLayout, QWidget
 
-from gui.drive_selection import DriveSelectionWidget
-from gui.enums import DriveSelectorMode, SignState
-from gui.pin_pad_dialog import PinPadDialog
-from gui.sign_thread import SignThread
-from utils.utils import load_stylesheet
+from common.gui.drive_selection import DriveSelectionWidget
+from common.gui.enums import DriveSelectorMode
+from common.gui.pin_pad_dialog import PinPadDialog
+from common.utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -18,7 +19,7 @@ class SignVerifyWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/css/sign_and_verify.css")
+        load_stylesheet(self, "main_app/gui/css/sign_and_verify.css")
         self.setWindowTitle("PDF Signer & Verifier")
         self.setGeometry(100, 100, 400, 500)
 
