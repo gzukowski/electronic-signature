@@ -1,12 +1,12 @@
 import logging
 
-from PyQt6.QtWidgets import QMessageBox, QProgressDialog, QPushButton, QVBoxLayout, QWidget
-
-from gui.drive_selection import DriveSelectionWidget
 from gui.enums import RsaGenState
 from gui.key_generation_thread import KeyGenerationThread
-from gui.pin_pad_dialog import PinPadDialog
-from utils.utils import load_stylesheet
+from PyQt6.QtWidgets import QMessageBox, QProgressDialog, QPushButton, QVBoxLayout, QWidget
+
+from common.gui.drive_selection import DriveSelectionWidget
+from common.gui.pin_pad_dialog import PinPadDialog
+from common.utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -17,7 +17,7 @@ class KeyGeneratorWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/css/key_gen.css")
+        load_stylesheet(self, "auxiliary_app/gui/css/key_gen.css")
         self.setWindowTitle("PAdES Key Generator")
         self.setGeometry(100, 100, 400, 400)
 

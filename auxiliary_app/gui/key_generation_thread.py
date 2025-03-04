@@ -1,8 +1,7 @@
 import logging
 
-from PyQt6.QtCore import QThread, pyqtSignal
-
 from gui.enums import RsaGenState
+from PyQt6.QtCore import QThread, pyqtSignal
 from utils.utils import generate_rsa_keys
 
 logger = logging.getLogger("global_logger")

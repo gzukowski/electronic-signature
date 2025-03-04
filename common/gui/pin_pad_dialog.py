@@ -1,8 +1,12 @@
 import logging
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from PyQt6.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton, QVBoxLayout
 
-from utils.utils import load_stylesheet
+from common.utils.utils import load_stylesheet
 
 logger = logging.getLogger("global_logger")
 
@@ -15,7 +19,7 @@ class PinPadDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        load_stylesheet(self, "gui/css/pin_pad.css")
+        load_stylesheet(self, "common/gui/css/pin_pad.css")
 
         self.setWindowTitle("Enter PIN")
         self.setGeometry(200, 200, 350, 400)
