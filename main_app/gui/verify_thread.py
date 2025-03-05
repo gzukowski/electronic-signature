@@ -2,10 +2,10 @@ import logging
 
 from gui.enums import VerifyState
 from PyQt6.QtCore import QThread, pyqtSignal
-from utils.crypto_utils import read_public_key
-from utils.pdf_utils import verify_pdf
+from utils.utils import read_public_key, verify_pdf
 
 logger = logging.getLogger("global_logger")
+
 
 class VerifyThread(QThread):
     progress_update = pyqtSignal(str, int)
@@ -20,6 +20,7 @@ class VerifyThread(QThread):
         try:
             self.progress_update.emit("Reading public key...", 10)
             self.public_key = read_public_key(self.pub_key_path)
+            logger.exception("Error during verifying PDF File")
             self.progress_update.emit("Initializing PDF File verification...", 10)
             verify_pdf(self.pdf_path, self.public_key, self.progress_update)
             self.progress_update.emit("Finalizing process...", 95)
