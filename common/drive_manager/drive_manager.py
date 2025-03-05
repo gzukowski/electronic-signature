@@ -31,7 +31,7 @@ class DriveManager:
 
         return [
             drive for drive in self.drive_list
-                if all(key in self.read_files(drive) for key in ["private_key.enc", "public_key.key"])
+                if all(key in self.read_files(drive) for key in ["private_key.enc"])
         ]
 
     def read_files(self, path: str) -> list[str]:
