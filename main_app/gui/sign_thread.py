@@ -2,7 +2,8 @@ import logging
 
 from gui.enums import SignState
 from PyQt6.QtCore import QThread, pyqtSignal
-from utils.utils import decrypt_rsa_key, sign_pdf
+from utils.crypto_utils import decrypt_rsa_key
+from utils.pdf_utils import sign_pdf
 
 logger = logging.getLogger("global_logger")
 
@@ -23,7 +24,6 @@ class SignThread(QThread):
             self.rsa_key = decrypt_rsa_key(self.pin, self.drive_manager, self.progress_update)
             self.progress_update.emit("Initializing PDF File signing...", 10)
             sign_pdf(self.pdf_path, self.rsa_key, self.progress_update)
-            logger.info("BYLOOOOOOOOOOOOOOOOOOOOOOOOOOOO GITEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEES")
             self.progress_update.emit("Finalizing process...", 95)
             self.progress_update.emit("Done!", 100)
             self.status.emit(SignState.FINISHED, "PDF File signed successfully.")
