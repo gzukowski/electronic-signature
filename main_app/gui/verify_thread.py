@@ -2,10 +2,10 @@ import logging
 
 from gui.enums import VerifyState
 from PyQt6.QtCore import QThread, pyqtSignal
-from utils.utils import read_public_key, verify_pdf
+from utils.crypto_utils import read_public_key
+from utils.pdf_utils import verify_pdf
 
 logger = logging.getLogger("global_logger")
-
 
 class VerifyThread(QThread):
     progress_update = pyqtSignal(str, int)

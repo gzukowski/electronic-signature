@@ -11,9 +11,8 @@ logger = logging.getLogger("global_logger")
 def read_public_key(public_key_path) -> RSA.RsaKey:
     try:
         with Path.open(public_key_path, "rb") as f:
-            public_key = RSA.import_key(f.read())
+            return RSA.import_key(f.read())
 
-        return public_key
     except (ValueError, KeyError):
         logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
         raise
@@ -68,113 +67,15 @@ def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey
 
     except (ValueError, KeyError):
         logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
-        raise
+        msg = "Decryption failed: Invalid PIN or corrupted key."
+        raise Exception(msg)
     except FileNotFoundError:
         logger.exception("File not found: %s", private_key_path)
-        raise
+        msg = f"File not found {private_key_path}"
+        raise Exception(msg)
     except Exception:
-        logger.exception("Unexpected error during RSA key decryption: %s")
-        raise
+        logger.exception("Unexpected error during RSA key decryption")
+        msg = "Unexpected error during RSA key decryption, check log"
+        raise Exception(msg)
 
     return rsa_key
-
-def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
-    try:
-        if not Path(pdf_path).exists():
-            logger.error("Didn't find pdf file: %s", pdf_path)
-            raise
-
-        if progress_signal:
-            progress_signal.emit("Initializing PDF File signing...", 20)
-        logger.info("Signing PDF File: %s", pdf_path)
-        time.sleep(1)
-
-        with Path.open(pdf_path, "rb") as f:
-            pdf_content = f.read()
-
-        reader = PdfReader(pdf_path)
-        writer = PdfWriter()
-
-        metadata = reader.metadata
-        if "/Signature" in metadata:
-            logger.info("Existing signature found. Removing old signature...")
-            del metadata["/Signature"]
-
-        if progress_signal:
-            progress_signal.emit("Hashing PDF File...", 40)
-        time.sleep(0.5)
-        pdf_hash = SHA256.new(pdf_content)
-
-        if progress_signal:
-            progress_signal.emit("Creating signature...", 60)
-        time.sleep(0.5)
-        signature = pkcs1_15.new(rsa_key).sign(pdf_hash)
-
-        for page in reader.pages:
-            writer.add_page(page)
-
-        if progress_signal:
-            progress_signal.emit("Adding signature to PDF File...", 80)
-        time.sleep(0.5)
-        writer.add_metadata({"/Signature": signature.hex()})
-
-        signed_pdf_path = pdf_path.replace(".pdf", "_signed.pdf")
-
-        with Path.open(signed_pdf_path, "wb") as f:
-            writer.write(f)
-
-        if progress_signal:
-            progress_signal.emit("Finalizing process...", 95)
-        time.sleep(0.5)
-        logger.info("PDF File successfully signed: %s", signed_pdf_path)
-
-    except Exception:
-        logger.exception("Error while signing PDF File: %s")
-        raise
-
-def verify_pdf(pdf_path: str, public_key: RSA.RsaKey, progress_signal=None) -> bool:
-    try:
-        if not Path(pdf_path).exists():
-            logger.error("Didn't find pdf file: %s", pdf_path)
-            raise
-
-        reader = PdfReader(pdf_path)
-        signature_hex = reader.metadata.get("/Signature")
-        if not signature_hex:
-            logger.error("No signature found in PDF metadata: %s", pdf_path)
-            raise
-        signature = bytes.fromhex(signature_hex)
-
-        metadata = reader.metadata.copy()
-        del metadata["/Signature"]
-        writer = PdfWriter()
-
-        for page in reader.pages:
-            writer.add_page(page)
-        writer.add_metadata(metadata)
-
-        temp_pdf_path = pdf_path.replace(".pdf", "_temp.pdf")
-        with Path.open(temp_pdf_path, "wb") as f:
-            writer.write(f)
-
-        with Path.open(temp_pdf_path, "rb") as f:
-            pdf_content = f.read()
-
-        Path(temp_pdf_path).unlink(missing_ok=True)
-
-        pdf_hash = SHA256.new(pdf_content)
-
-        logger.info("Verification %s", pdf_content)
-
-        try:
-            pkcs1_15.new(public_key).verify(pdf_hash, signature)
-            logger.info("Signature verification successful for PDF: %s", pdf_path)
-            #raise Exception("Gites")
-        except (ValueError, TypeError):
-            logger.exception("Signature verification failed for PDF: %s", pdf_path)
-            raise Exception("Nie gites")
-
-    except Exception:
-        logger.exception("Error while verifying PDF File: %s", pdf_path)
-        raise
-
