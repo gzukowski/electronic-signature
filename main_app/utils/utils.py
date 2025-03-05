@@ -162,6 +162,8 @@ def verify_pdf(pdf_path: str, public_key: RSA.RsaKey, progress_signal=None) -> b
         with Path.open(temp_pdf_path, "rb") as f:
             pdf_content = f.read()
 
+        Path(temp_pdf_path).unlink(missing_ok=True)
+
         pdf_hash = SHA256.new(pdf_content)
 
         logger.info("Verification %s", pdf_content)
