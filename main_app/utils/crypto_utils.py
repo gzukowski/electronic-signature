@@ -92,6 +92,14 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
         with Path.open(pdf_path, "rb") as f:
             pdf_content = f.read()
 
+        reader = PdfReader(pdf_path)
+        writer = PdfWriter()
+
+        metadata = reader.metadata
+        if "/Signature" in metadata:
+            logger.info("Existing signature found. Removing old signature...")
+            del metadata["/Signature"]
+
         if progress_signal:
             progress_signal.emit("Hashing PDF File...", 40)
         time.sleep(0.5)
@@ -102,9 +110,6 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
         time.sleep(0.5)
         signature = pkcs1_15.new(rsa_key).sign(pdf_hash)
 
-        reader = PdfReader(pdf_path)
-        writer = PdfWriter()
-
         for page in reader.pages:
             writer.add_page(page)
 
@@ -113,13 +118,15 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
         time.sleep(0.5)
         writer.add_metadata({"/Signature": signature.hex()})
 
-        with Path.open(pdf_path, "wb") as f:
+        signed_pdf_path = pdf_path.replace(".pdf", "_signed.pdf")
+
+        with Path.open(signed_pdf_path, "wb") as f:
             writer.write(f)
 
         if progress_signal:
             progress_signal.emit("Finalizing process...", 95)
         time.sleep(0.5)
-        logger.info("PDF File successfully signed: %s", pdf_path)
+        logger.info("PDF File successfully signed: %s", signed_pdf_path)
 
     except Exception:
         logger.exception("Error while signing PDF File: %s")
@@ -138,18 +145,32 @@ def verify_pdf(pdf_path: str, public_key: RSA.RsaKey, progress_signal=None) -> b
             raise
         signature = bytes.fromhex(signature_hex)
 
-        with Path.open(pdf_path, "rb") as f:
+        metadata = reader.metadata.copy()
+        del metadata["/Signature"]
+        writer = PdfWriter()
+
+        for page in reader.pages:
+            writer.add_page(page)
+        writer.add_metadata(metadata)
+
+        temp_pdf_path = pdf_path.replace(".pdf", "_temp.pdf")
+        with Path.open(temp_pdf_path, "wb") as f:
+            writer.write(f)
+
+        with Path.open(temp_pdf_path, "rb") as f:
             pdf_content = f.read()
 
         pdf_hash = SHA256.new(pdf_content)
 
+        logger.info("Verification %s", pdf_content)
+
         try:
             pkcs1_15.new(public_key).verify(pdf_hash, signature)
             logger.info("Signature verification successful for PDF: %s", pdf_path)
-            raise
+            #raise Exception("Gites")
         except (ValueError, TypeError):
             logger.exception("Signature verification failed for PDF: %s", pdf_path)
-            raise
+            raise Exception("Nie gites")
 
     except Exception:
         logger.exception("Error while verifying PDF File: %s", pdf_path)

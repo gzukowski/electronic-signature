@@ -24,6 +24,7 @@ class SignThread(QThread):
             self.rsa_key = decrypt_rsa_key(self.pin, self.drive_manager, self.progress_update)
             self.progress_update.emit("Initializing PDF File signing...", 10)
             sign_pdf(self.pdf_path, self.rsa_key, self.progress_update)
+            logger.info("BYLOOOOOOOOOOOOOOOOOOOOOOOOOOOO GITEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEES")
             self.progress_update.emit("Finalizing process...", 95)
             self.progress_update.emit("Done!", 100)
             self.status.emit(SignState.FINISHED, "PDF File signed successfully.")
