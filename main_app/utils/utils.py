@@ -10,6 +10,22 @@ from PyPDF2 import PdfReader, PdfWriter
 
 logger = logging.getLogger("global_logger")
 
+def read_public_key(public_key_path) -> RSA.RsaKey:
+    try:
+        with Path.open(public_key_path, "rb") as f:
+            public_key = RSA.import_key(f.read())
+
+        return public_key
+    except (ValueError, KeyError):
+        logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
+        raise
+    except FileNotFoundError:
+        logger.exception("File not found: %s", public_key_path)
+        raise
+    except Exception:
+        logger.exception("Unexpected error during RSA key decryption: %s")
+        raise
+
 def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey:
     try:
         private_key_path = f"{drive_manager.selected_drive}/private_key.enc"
@@ -54,22 +70,21 @@ def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey
 
     except (ValueError, KeyError):
         logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
+        raise
     except FileNotFoundError:
         logger.exception("File not found: %s", private_key_path)
+        raise
     except Exception:
         logger.exception("Unexpected error during RSA key decryption: %s")
-
-    if progress_signal:
-        progress_signal.emit("Decryption failed!", 0)
+        raise
 
     return rsa_key
 
-
-def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None) -> bool:
+def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
     try:
         if not Path(pdf_path).exists():
             logger.error("Didn't find pdf file: %s", pdf_path)
-            return False
+            raise
 
         if progress_signal:
             progress_signal.emit("Initializing PDF File signing...", 20)
@@ -110,5 +125,35 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None) -> bool:
 
     except Exception:
         logger.exception("Error while signing PDF File: %s")
+        raise
 
+def verify_pdf(pdf_path: str, public_key: RSA.RsaKey, progress_signal=None) -> bool:
+    try:
+        if not Path(pdf_path).exists():
+            logger.error("Didn't find pdf file: %s", pdf_path)
+            raise
+
+        reader = PdfReader(pdf_path)
+        signature_hex = reader.metadata.get("/Signature")
+        if not signature_hex:
+            logger.error("No signature found in PDF metadata: %s", pdf_path)
+            raise
+        signature = bytes.fromhex(signature_hex)
+
+        with Path.open(pdf_path, "rb") as f:
+            pdf_content = f.read()
+
+        pdf_hash = SHA256.new(pdf_content)
+
+        try:
+            pkcs1_15.new(public_key).verify(pdf_hash, signature)
+            logger.info("Signature verification successful for PDF: %s", pdf_path)
+            raise
+        except (ValueError, TypeError):
+            logger.exception("Signature verification failed for PDF: %s", pdf_path)
+            raise
+
+    except Exception:
+        logger.exception("Error while verifying PDF File: %s", pdf_path)
+        raise
 
