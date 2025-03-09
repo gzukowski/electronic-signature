@@ -25,16 +25,16 @@ class SignVerifyWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        self.sign_button = QPushButton("✍️ Sign PDF")
+        self.sign_button = QPushButton("Sign PDF")
         self.sign_button.setObjectName("signBtn")
         self.sign_button.clicked.connect(self.open_pin_pad)
         layout.addWidget(self.sign_button)
 
-        self.verify_button = QPushButton("✅ Verify PDF Signature")
+        self.verify_button = QPushButton("Verify PDF Signature")
         self.verify_button.setObjectName("verifyBtn")
         layout.addWidget(self.verify_button)
 
-        self.quit_button = QPushButton("❌ Quit")
+        self.quit_button = QPushButton("Quit")
         self.quit_button.setObjectName("quitBtn")
         self.quit_button.clicked.connect(self.close)
         layout.addWidget(self.quit_button)

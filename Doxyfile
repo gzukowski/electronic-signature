@@ -1,0 +1,16 @@
+PROJECT_NAME           = "Tool for Emulating the PAdES Qualified Electronic Signature"
+OUTPUT_DIRECTORY       = docs
+GENERATE_LATEX         = YES
+GENERATE_HTML          = YES
+USE_PDFLATEX          = YES
+LATEX_OUTPUT          = latex
+INPUT                 = 
+EXCLUDE              = README.md ruff.toml .gitignore venv .github
+RECURSIVE             = YES
+QUIET                 = NO
+EXTRACT_ALL           = YES
+GENERATE_TREEVIEW     = YES
+
+LATEX_CMD_NAME        = pdflatex
+PDF_HYPERLINKS       = YES
+GENERATE_INDEX       = YES
