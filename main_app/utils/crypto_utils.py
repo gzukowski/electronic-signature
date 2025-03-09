@@ -9,6 +9,22 @@ from Crypto.PublicKey import RSA
 logger = logging.getLogger("global_logger")
 
 def read_public_key(public_key_path) -> RSA.RsaKey:
+    """
+    Reads an RSA public key from the specified file path.
+
+    Args:
+        public_key_path (str or Path): The path to the public key file.
+
+    Returns:
+        RSA.RsaKey: The RSA public key.
+
+    Raises:
+        ValueError: If the key is invalid or corrupted.
+        KeyError: If the key is invalid or corrupted.
+        FileNotFoundError: If the specified file does not exist.
+        Exception: For any other unexpected errors during key decryption.
+
+    """
     try:
         with Path.open(public_key_path, "rb") as f:
             return RSA.import_key(f.read())
@@ -24,6 +40,21 @@ def read_public_key(public_key_path) -> RSA.RsaKey:
         raise
 
 def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey:
+    """
+    Decrypts an RSA private key using a provided PIN and drive manager.
+
+    Args:
+        pin (str): The PIN used to decrypt the RSA key.
+        drive_manager: An object that manages the drive where the encrypted key is stored.
+        progress_signal (optional): A signal object to emit progress updates. Defaults to None.
+
+    Returns:
+        RSA.RsaKey: The decrypted RSA private key.
+
+    Raises:
+        Exception: If the decryption fails due to an invalid PIN, corrupted key, file not found, or any other unexpected error.
+
+    """
     try:
         private_key_path = f"{drive_manager.selected_drive}/private_key.enc"
 
