@@ -1,5 +1,5 @@
 ruff
-PyQt5
+PyQt6
 psutil
 pycryptodome
 pypdf2
