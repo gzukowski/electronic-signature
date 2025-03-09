@@ -20,7 +20,6 @@ class VerifyThread(QThread):
         try:
             self.progress_update.emit("Reading public key...", 10)
             self.public_key = read_public_key(self.pub_key_path)
-            logger.exception("Error during verifying PDF File")
             self.progress_update.emit("Initializing PDF File verification...", 10)
             verify_pdf(self.pdf_path, self.public_key, self.progress_update)
             self.progress_update.emit("Finalizing process...", 95)
