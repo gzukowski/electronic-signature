@@ -74,8 +74,6 @@ class DriveSelectionWidget(QWidget):
             self.select_drive()
             self.is_drive_selected = True
 
-        logger.info("Drive list refreshed")
-
     def get_connected_drives(self):
         drives = []
 

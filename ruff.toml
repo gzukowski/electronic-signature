@@ -18,5 +18,5 @@ ignore = [
     "D205", "D212", "D400", "D401", "D415",
     "E402",  # false positives for local imports
     "E501",  # line too long
-    "TRY003", "TD002", "TD003", "FIX002",
+    "TRY003", "TD002", "TD003", "FIX002", "B904", "TRY002"
 ]

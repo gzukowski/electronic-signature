@@ -5,10 +5,23 @@ from pathlib import Path
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
-from Crypto.Signature import pkcs1_15
-from PyPDF2 import PdfReader, PdfWriter
 
 logger = logging.getLogger("global_logger")
+
+def read_public_key(public_key_path) -> RSA.RsaKey:
+    try:
+        with Path.open(public_key_path, "rb") as f:
+            return RSA.import_key(f.read())
+
+    except (ValueError, KeyError):
+        logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
+        raise
+    except FileNotFoundError:
+        logger.exception("File not found: %s", public_key_path)
+        raise
+    except Exception:
+        logger.exception("Unexpected error during RSA key decryption: %s")
+        raise
 
 def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey:
     try:
@@ -54,61 +67,15 @@ def decrypt_rsa_key(pin: str, drive_manager, progress_signal=None) -> RSA.RsaKey
 
     except (ValueError, KeyError):
         logger.exception("Decryption failed: Invalid PIN or corrupted key. Error: %s")
+        msg = "Decryption failed: Invalid PIN or corrupted key."
+        raise Exception(msg)
     except FileNotFoundError:
         logger.exception("File not found: %s", private_key_path)
+        msg = f"File not found {private_key_path}"
+        raise Exception(msg)
     except Exception:
-        logger.exception("Unexpected error during RSA key decryption: %s")
-
-    if progress_signal:
-        progress_signal.emit("Decryption failed!", 0)
+        logger.exception("Unexpected error during RSA key decryption")
+        msg = "Unexpected error during RSA key decryption, check log"
+        raise Exception(msg)
 
     return rsa_key
-
-
-def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None) -> bool:
-    try:
-        if not Path(pdf_path).exists():
-            logger.error("Didn't find pdf file: %s", pdf_path)
-            return False
-
-        if progress_signal:
-            progress_signal.emit("Initializing PDF File signing...", 20)
-        logger.info("Signing PDF File: %s", pdf_path)
-        time.sleep(1)
-
-        with Path.open(pdf_path, "rb") as f:
-            pdf_content = f.read()
-
-        if progress_signal:
-            progress_signal.emit("Hashing PDF File...", 40)
-        time.sleep(0.5)
-        pdf_hash = SHA256.new(pdf_content)
-
-        if progress_signal:
-            progress_signal.emit("Creating signature...", 60)
-        time.sleep(0.5)
-        signature = pkcs1_15.new(rsa_key).sign(pdf_hash)
-
-        reader = PdfReader(pdf_path)
-        writer = PdfWriter()
-
-        for page in reader.pages:
-            writer.add_page(page)
-
-        if progress_signal:
-            progress_signal.emit("Adding signature to PDF File...", 80)
-        time.sleep(0.5)
-        writer.add_metadata({"/Signature": signature.hex()})
-
-        with Path.open(pdf_path, "wb") as f:
-            writer.write(f)
-
-        if progress_signal:
-            progress_signal.emit("Finalizing process...", 95)
-        time.sleep(0.5)
-        logger.info("PDF File successfully signed: %s", pdf_path)
-
-    except Exception:
-        logger.exception("Error while signing PDF File: %s")
-
-

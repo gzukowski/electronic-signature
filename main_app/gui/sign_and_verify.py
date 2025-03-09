@@ -1,7 +1,8 @@
 import logging
 
-from gui.enums import SignState
+from gui.enums import SignState, VerifyState
 from gui.sign_thread import SignThread
+from gui.verify_thread import VerifyThread
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QPushButton, QVBoxLayout, QWidget
 
 from common.gui.drive_selection import DriveSelectionWidget
@@ -14,7 +15,6 @@ logger = logging.getLogger("global_logger")
 class SignVerifyWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.selected_pdf = None
         logger.info("Instance of Sign and Verify created")
         self.init_ui()
 
@@ -27,11 +27,12 @@ class SignVerifyWindow(QWidget):
 
         self.sign_button = QPushButton("Sign PDF")
         self.sign_button.setObjectName("signBtn")
-        self.sign_button.clicked.connect(self.open_pin_pad)
+        self.sign_button.clicked.connect(self.sign_pdf)
         layout.addWidget(self.sign_button)
 
         self.verify_button = QPushButton("Verify PDF Signature")
         self.verify_button.setObjectName("verifyBtn")
+        self.verify_button.clicked.connect(self.verify_sign)
         layout.addWidget(self.verify_button)
 
         self.quit_button = QPushButton("Quit")
@@ -44,7 +45,7 @@ class SignVerifyWindow(QWidget):
 
         self.setLayout(layout)
 
-    def start_signing_file(self, pin):
+    def start_signing_file(self, pin, pdf_path):
         self.progress_dialog = QProgressDialog("Preparing PDF file signing...", "Cancel", 0, 100, self)
         self.progress_dialog.setWindowTitle("Signing of PDF file")
         self.progress_dialog.setMinimumWidth(300)
@@ -52,10 +53,24 @@ class SignVerifyWindow(QWidget):
         self.progress_dialog.setAutoReset(True)
         self.progress_dialog.show()
 
-        self.keygen_thread = SignThread(pin, self.drive_selection_widget.drive_manager, self.selected_pdf)
+        self.keygen_thread = SignThread(pin, self.drive_selection_widget.drive_manager, pdf_path)
         self.keygen_thread.progress_update.connect(self.update_progress)
         self.keygen_thread.status.connect(self.handle_status)
         self.keygen_thread.start()
+
+    def start_verifying_file(self, pub_key_path, pdf_path):
+        self.progress_dialog = QProgressDialog("Preparing PDF file verification...", "Cancel", 0, 100, self)
+        self.progress_dialog.setWindowTitle("PDF verification")
+        self.progress_dialog.setMinimumWidth(300)
+        self.progress_dialog.setAutoClose(True)
+        self.progress_dialog.setAutoReset(True)
+        self.progress_dialog.show()
+
+        self.keygen_thread = VerifyThread(pub_key_path, pdf_path)
+        self.keygen_thread.progress_update.connect(self.update_progress)
+        self.keygen_thread.status.connect(self.handle_status)
+        self.keygen_thread.start()
+
 
     def update_progress(self, message, value):
         self.progress_dialog.setLabelText(message)
@@ -68,26 +83,51 @@ class SignVerifyWindow(QWidget):
         elif status_code == SignState.FINISHED:
             self.progress_dialog.close()
             QMessageBox.information(self, "Success", message)
+        elif status_code == VerifyState.ERRORED:
+            self.progress_dialog.close()
+            QMessageBox.critical(self, "Error", f"Verifying PDF File failed!\n\n{message}")
+        elif status_code == VerifyState.FINISHED:
+            self.progress_dialog.close()
+            QMessageBox.information(self, "Success", message)
 
-    def close_application(self):
-        logger.info("Application closed by user")
-        self.close()
+    def verify_sign(self):
+        pdf_path = self.select_pdf_file()
+        if not pdf_path:
+            return
 
-    def open_pin_pad(self):
+        pub_key_path = self.select_pub_key_file()
+        if pdf_path:
+            self.start_verifying_file(pub_key_path, pdf_path)
+
+    def sign_pdf(self):
         pin_dialog = PinPadDialog()
         logger.info("Opened PinPad")
         if pin_dialog.exec():
             pin = pin_dialog.get_pin()
             logger.info("PIN: %s", pin)
-            self.select_pdf_file()
-            if self.selected_pdf:
-                self.start_signing_file(pin)
+            pdf_path = self.select_pdf_file()
+            if pdf_path:
+                self.start_signing_file(pin, pdf_path)
 
     def select_pdf_file(self):
         input_pdf_path, _ = QFileDialog.getOpenFileName(self, "Choose PDF file", "", "PDF Files (*.pdf)")
 
         if not input_pdf_path:
             QMessageBox.warning(self, "Cancelled", "PDF file not selected for signature.")
+            return None
 
-        self.selected_pdf = input_pdf_path
+        return input_pdf_path
+
+    def select_pub_key_file(self):
+        input_path, _ = QFileDialog.getOpenFileName(self, "Choose your public key", "", "")
+
+        if not input_path:
+            QMessageBox.warning(self, "Cancelled", "Public key not selected.")
+            return None
+
+        return input_path
+
+    def close_application(self):
+        logger.info("Application closed by user")
+        self.close()
 
