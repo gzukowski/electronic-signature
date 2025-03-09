@@ -59,6 +59,10 @@ def initialize_pdf_writer(pdf_path: str):
     if "/Signature" in metadata:
         logger.info("Existing signature found. Removing old signature...")
         del metadata["/Signature"]
+
+    if "/Producer" in metadata:
+        logger.info("Existing producer found. Removing producer...")
+        del metadata["/Producer"]
     return reader, writer
 
 def hash_pdf(pdf_content: bytes, progress_signal=None):
@@ -115,6 +119,7 @@ def read_pdf_metadata(pdf_path: str, progress_signal=None):
 def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
     metadata = reader.metadata.copy()
     del metadata["/Signature"]
+    del metadata["/Producer"]
     writer = PdfWriter()
 
     if progress_signal:
@@ -148,7 +153,7 @@ def verify_signature(public_key: RSA.RsaKey, pdf_hash, signature: bytes, pdf_pat
 
     try:
         logger.info("Verifying signature with hash: %s", pdf_hash.hexdigest())
-        logger.info("Signature to verify: %s", signature.hex()) 
+        logger.info("Signature to verify: %s", signature.hex())
         pkcs1_15.new(public_key).verify(pdf_hash, signature)
         logger.info("Signature verification successful for PDF: %s", pdf_path)
         if progress_signal:
