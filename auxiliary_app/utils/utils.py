@@ -8,6 +8,21 @@ from Crypto.PublicKey import RSA
 logger = logging.getLogger("global_logger")
 
 def generate_rsa_keys(pin, drive_manager, progress_signal=None):
+    """
+    Generates RSA keys, encrypts the private key with a hashed PIN, and saves both keys to a USB drive.
+
+    Args:
+        pin (str): The PIN used to hash and encrypt the private key.
+        drive_manager (object): An object responsible for managing the USB drive operations.
+        progress_signal (object, optional): An optional signal object to emit progress updates.
+
+    Raises:
+        Exception: If any error occurs during the key generation process.
+
+    Emits:
+        progress_signal (str, int): Emits progress updates with a message and a percentage.
+
+    """
     try:
         if progress_signal:
             progress_signal.emit("Initializing RSA key generation...", 10)
