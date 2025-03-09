@@ -65,13 +65,17 @@ def hash_pdf(pdf_content: bytes, progress_signal=None):
     if progress_signal:
         progress_signal.emit("Hashing PDF File...", 40)
     time.sleep(0.5)
-    return SHA256.new(pdf_content)
+    pdf_hash = SHA256.new(pdf_content)
+    logger.info("Generated PDF hash: %s", pdf_hash.hexdigest())
+    return pdf_hash
 
 def create_signature(rsa_key: RSA.RsaKey, pdf_hash, progress_signal=None):
     if progress_signal:
         progress_signal.emit("Creating signature...", 60)
     time.sleep(0.5)
-    return pkcs1_15.new(rsa_key).sign(pdf_hash)
+    signature = pkcs1_15.new(rsa_key).sign(pdf_hash)
+    logger.info("Generated signature: %s", signature.hex())
+    return signature
 
 def add_signature_to_pdf(writer, reader, signature: bytes, progress_signal=None):
     for page in reader.pages:
@@ -99,6 +103,8 @@ def read_pdf_metadata(pdf_path: str, progress_signal=None):
         if not signature_hex:
             msg = "No signature found in PDF metadata."
             raise ValueError(msg)  # noqa: TRY301
+
+        logger.info("Retrieved signature from metadata: %s", signature_hex)
         return reader, bytes.fromhex(signature_hex)
     except Exception:
         logger.exception("Error reading PDF metadata: %s", pdf_path)
@@ -141,6 +147,8 @@ def verify_signature(public_key: RSA.RsaKey, pdf_hash, signature: bytes, pdf_pat
     time.sleep(1)
 
     try:
+        logger.info("Verifying signature with hash: %s", pdf_hash.hexdigest())
+        logger.info("Signature to verify: %s", signature.hex()) 
         pkcs1_15.new(public_key).verify(pdf_hash, signature)
         logger.info("Signature verification successful for PDF: %s", pdf_path)
         if progress_signal:
