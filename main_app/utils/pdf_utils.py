@@ -12,13 +12,29 @@ logger = logging.getLogger("global_logger")
 def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
     check_pdf_exists(pdf_path, progress_signal)
     try:
-        initialize_signing_process(pdf_path, progress_signal)
+        pdf_path = initialize_signing_process(pdf_path, progress_signal)
         pdf_content = read_pdf_file(pdf_path)
-        reader, writer = initialize_pdf_writer(pdf_path)
         pdf_hash = hash_pdf(pdf_content, progress_signal)
+
+        temp_pdf_path = clear_signature_metadata(pdf_path)
+        pdf_content = read_pdf_file(temp_pdf_path)
+        pdf_hash = hash_pdf(pdf_content, progress_signal)
+
         signature = create_signature(rsa_key, pdf_hash, progress_signal)
-        add_signature_to_pdf(writer, reader, signature, progress_signal)
-        save_signed_pdf(pdf_path, writer, progress_signal)
+        result_path = add_signature_to_pdf(temp_pdf_path, signature, progress_signal)
+        pdf_content = read_pdf_file(result_path)
+        pdf_hash = hash_pdf(pdf_content, progress_signal)
+        #save_signed_pdf(pdf_path, writer, progress_signal)
+
+
+        # initialize_signing_process(pdf_path, progress_signal)
+        # temp_pdf_path =
+        # pdf_content = read_pdf_file(pdf_path)
+        # reader, writer = initialize_pdf_writer(pdf_path)
+        # pdf_hash = hash_pdf(pdf_content, progress_signal)
+        # signature = create_signature(rsa_key, pdf_hash, progress_signal)
+        # add_signature_to_pdf(writer, reader, signature, progress_signal)
+        # save_signed_pdf(pdf_path, writer, progress_signal)
     except Exception:
         logger.exception("Error while signing PDF File: %s")
         raise
@@ -45,25 +61,49 @@ def initialize_signing_process(pdf_path: str, progress_signal=None):
     if progress_signal:
         progress_signal.emit("Initializing PDF File signing...", 20)
     logger.info("Signing PDF File: %s", pdf_path)
-    time.sleep(1)
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+
+    for page in reader.pages:
+        writer.add_page(page)
+
+    metadata = reader.metadata
+
+    writer.add_metadata(metadata)
+
+    temp_pdf_path = pdf_path.replace(".pdf", "_v2.pdf")
+    with Path.open(temp_pdf_path, "wb") as f:
+        writer.write(f)
+    return temp_pdf_path
 
 def read_pdf_file(pdf_path: str):
     with Path.open(pdf_path, "rb") as f:
         return f.read()
 
-def initialize_pdf_writer(pdf_path: str):
+def clear_signature_metadata(pdf_path: str):
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
 
-    metadata = reader.metadata
-    if "/Signature" in metadata:
-        logger.info("Existing signature found. Removing old signature...")
-        del metadata["/Signature"]
+    for page in reader.pages:
+        writer.add_page(page)
 
-    if "/Producer" in metadata:
-        logger.info("Existing producer found. Removing producer...")
-        del metadata["/Producer"]
-    return reader, writer
+    # metadata = reader.metadata
+    # if "/Signature" in metadata:
+    #     logger.info("Existing signature found. Removing old signature...")
+    #     del metadata["/Signature"]
+
+    # if "/Producer" in metadata:
+    #     logger.info("Existing producer found. Removing producer...")
+    #     del metadata["/Producer"]
+
+    # writer.add_metadata(metadata)
+
+    temp_pdf_path = pdf_path.replace(".pdf", "_cleaned.pdf")
+    with Path.open(temp_pdf_path, "wb") as f:
+        writer.write(f)
+
+    logger.info("Signature metadata cleared. New file saved: %s", temp_pdf_path)
+    return temp_pdf_path
 
 def hash_pdf(pdf_content: bytes, progress_signal=None):
     if progress_signal:
@@ -81,7 +121,10 @@ def create_signature(rsa_key: RSA.RsaKey, pdf_hash, progress_signal=None):
     logger.info("Generated signature: %s", signature.hex())
     return signature
 
-def add_signature_to_pdf(writer, reader, signature: bytes, progress_signal=None):
+def add_signature_to_pdf(pdf_path, signature: bytes, progress_signal=None):
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+
     for page in reader.pages:
         writer.add_page(page)
 
@@ -89,6 +132,17 @@ def add_signature_to_pdf(writer, reader, signature: bytes, progress_signal=None)
         progress_signal.emit("Adding signature to PDF File...", 80)
     time.sleep(0.5)
     writer.add_metadata({"/Signature": signature.hex()})
+
+    signed_pdf_path = pdf_path.replace(".pdf", "_signed.pdf")
+    with Path.open(signed_pdf_path, "wb") as f:
+        writer.write(f)
+
+    if progress_signal:
+        progress_signal.emit("Finalizing process...", 95)
+    time.sleep(0.5)
+    logger.info("PDF File successfully signed: %s", signed_pdf_path)
+
+    return signed_pdf_path
 
 def save_signed_pdf(pdf_path: str, writer, progress_signal=None):
     signed_pdf_path = pdf_path.replace(".pdf", "_signed.pdf")
@@ -129,7 +183,7 @@ def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
     try:
         for page in reader.pages:
             writer.add_page(page)
-        writer.add_metadata(metadata)
+        #writer.add_metadata(metadata)
 
         temp_pdf_path = pdf_path.replace(".pdf", "_temp.pdf")
         with Path.open(temp_pdf_path, "wb") as f:
@@ -138,7 +192,7 @@ def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
         with Path.open(temp_pdf_path, "rb") as f:
             pdf_content = f.read()
 
-        Path(temp_pdf_path).unlink(missing_ok=True)
+        #Path(temp_pdf_path).unlink(missing_ok=True)
         return SHA256.new(pdf_content)
     except Exception:
         logger.exception("Error processing PDF file: %s", pdf_path)
