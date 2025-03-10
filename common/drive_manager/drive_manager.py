@@ -6,6 +6,22 @@ import psutil
 logger = logging.getLogger("global_logger")
 
 class DriveManager:
+    """
+    DriveManager is a class responsible for managing USB drives. It provides functionalities to list available drives,
+    detect drives with specific key files, read files from a drive, and save data to a selected drive.
+
+    Methods:
+        __init__():
+        refresh() -> list[str]:
+            Refreshes and returns a list of USB drives.
+        list_drives_with_keys() -> list[str]:
+            Returns a list of USB drives that contain specific key files.
+        read_files(path: str) -> list[str]:
+            Reads and returns a list of filenames from the specified disk path.
+        save_to_drive(data: bytes, destination_name: str) -> bool:
+
+    """
+
     def __init__(self):
         """
         Initializes the DriveManager instance.
@@ -16,7 +32,9 @@ class DriveManager:
 
     def refresh(self) -> list[str]:
         """
-        Returns a list of USB drives
+        Returns:
+            list[str]: A list of USB drivers
+
         """
         self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
         self.drive_list = [disk.device for disk in psutil.disk_partitions()]
@@ -24,7 +42,9 @@ class DriveManager:
 
     def list_drives_with_keys(self) -> list[str]:
         """
-        Returns a list of USB drivers with key files
+        Returns:
+            list[str]: A list of USB drivers with key files
+
         """
         self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
         self.drive_list = [disk.device for disk in psutil.disk_partitions()]
