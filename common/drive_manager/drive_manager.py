@@ -38,7 +38,7 @@ class DriveManager:
         """
         self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
         self.drive_list = [disk.device for disk in psutil.disk_partitions()]
-        logger.info("Detected devices: %s", self.drive_list)
+        #logger.info("Detected devices: %s", self.drive_list)
 
     def list_drives_with_keys(self) -> list[str]:
         """
@@ -66,7 +66,7 @@ class DriveManager:
 
         """
         files = [file.name for file in Path(path).iterdir() if file.is_file()]
-        logger.info("Files in %s: %s", path, files)
+        #logger.info("Files in %s: %s", path, files)
         return files
 
     def save_to_drive(self, data: bytes, destination_name: str) -> bool:

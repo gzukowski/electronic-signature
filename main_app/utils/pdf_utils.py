@@ -34,13 +34,18 @@ def sign_pdf(pdf_path: str, rsa_key: RSA.RsaKey, progress_signal=None):
     """
     check_pdf_exists(pdf_path, progress_signal)
     try:
-        initialize_signing_process(pdf_path, progress_signal)
+        pdf_path = initialize_signing_process(pdf_path, progress_signal)
         pdf_content = read_pdf_file(pdf_path)
-        reader, writer = initialize_pdf_writer(pdf_path)
         pdf_hash = hash_pdf(pdf_content, progress_signal)
+
+        temp_pdf_path = clear_signature_metadata(pdf_path)
+        pdf_content = read_pdf_file(temp_pdf_path)
+        pdf_hash = hash_pdf(pdf_content, progress_signal)
+
         signature = create_signature(rsa_key, pdf_hash, progress_signal)
-        add_signature_to_pdf(writer, reader, signature, progress_signal)
-        save_signed_pdf(pdf_path, writer, progress_signal)
+        result_path = add_signature_to_pdf(temp_pdf_path, signature, progress_signal)
+        pdf_content = read_pdf_file(result_path)
+        pdf_hash = hash_pdf(pdf_content, progress_signal)
     except Exception:
         logger.exception("Error while signing PDF File: %s")
         raise
@@ -107,7 +112,18 @@ def initialize_signing_process(pdf_path: str, progress_signal=None):
     if progress_signal:
         progress_signal.emit("Initializing PDF File signing...", 20)
     logger.info("Signing PDF File: %s", pdf_path)
-    time.sleep(1)
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+
+    for page in reader.pages:
+        writer.add_page(page)
+
+    metadata = reader.metadata
+    writer.add_metadata(metadata)
+
+    with Path.open(pdf_path, "wb") as f:
+        writer.write(f)
+    return pdf_path
 
 def read_pdf_file(pdf_path: str):
     """
@@ -123,32 +139,28 @@ def read_pdf_file(pdf_path: str):
     with Path.open(pdf_path, "rb") as f:
         return f.read()
 
-def initialize_pdf_writer(pdf_path: str):
+def clear_signature_metadata(pdf_path: str):
     """
-    Initializes a PDF writer and reader for the given PDF file path.
-    This function reads the PDF file from the specified path and creates a PdfReader
-    and PdfWriter object. If an existing signature is found in the PDF metadata, it
-    removes the old signature.
+    Removes signature metadata from the PDF file.
 
     Args:
-        pdf_path (str): The file path to the PDF document.
+        pdf_path (str): The path to the PDF file.
 
     Returns:
-        tuple: A tuple containing the PdfReader and PdfWriter objects.
+        str: The path to the cleaned PDF file.
 
     """
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
 
-    metadata = reader.metadata
-    if "/Signature" in metadata:
-        logger.info("Existing signature found. Removing old signature...")
-        del metadata["/Signature"]
+    for page in reader.pages:
+        writer.add_page(page)
 
-    if "/Producer" in metadata:
-        logger.info("Existing producer found. Removing producer...")
-        del metadata["/Producer"]
-    return reader, writer
+    with Path.open(pdf_path, "wb") as f:
+        writer.write(f)
+
+    logger.info("Signature metadata cleared. New file saved: %s", pdf_path)
+    return pdf_path
 
 def hash_pdf(pdf_content: bytes, progress_signal=None):
     """
@@ -190,20 +202,22 @@ def create_signature(rsa_key: RSA.RsaKey, pdf_hash, progress_signal=None):
     logger.info("Generated signature: %s", signature.hex())
     return signature
 
-def add_signature_to_pdf(writer, reader, signature: bytes, progress_signal=None):
+def add_signature_to_pdf(pdf_path, signature: bytes, progress_signal=None):
     """
-    Adds a digital signature to a PDF file.
+    Adds a digital signature to the metadata of the PDF file.
 
     Args:
-    writer (PdfWriter): The PdfWriter object used to write the PDF.
-    reader (PdfReader): The PdfReader object used to read the PDF.
-    signature (bytes): The digital signature to be added to the PDF.
-    progress_signal (Signal, optional): A signal object to emit progress updates. Defaults to None.
+        pdf_path (str): The path to the PDF file.
+        signature (bytes): The digital signature to be added.
+        progress_signal (optional): A signal to emit progress updates.
 
     Returns:
-    None
+        str: The path to the signed PDF file.
 
     """
+    reader = PdfReader(pdf_path)
+    writer = PdfWriter()
+
     for page in reader.pages:
         writer.add_page(page)
 
@@ -212,27 +226,33 @@ def add_signature_to_pdf(writer, reader, signature: bytes, progress_signal=None)
     time.sleep(0.5)
     writer.add_metadata({"/Signature": signature.hex()})
 
-def save_signed_pdf(pdf_path: str, writer, progress_signal=None):
-    """
-    Save a signed PDF file to the specified path.
-
-    Args:
-        pdf_path (str): The path to the original PDF file.
-        writer: The PDF writer object used to write the signed PDF.
-        progress_signal (optional): A signal object to emit progress updates.
-
-    Returns:
-        None
-
-    """
-    signed_pdf_path = pdf_path.replace(".pdf", "_signed.pdf")
-    with Path.open(signed_pdf_path, "wb") as f:
+    with Path.open(pdf_path, "wb") as f:
         writer.write(f)
 
     if progress_signal:
         progress_signal.emit("Finalizing process...", 95)
     time.sleep(0.5)
-    logger.info("PDF File successfully signed: %s", signed_pdf_path)
+    logger.info("PDF File successfully signed: %s", pdf_path)
+
+    return pdf_path
+
+def save_signed_pdf(pdf_path: str, writer, progress_signal=None):
+    """
+    Saves the signed PDF file.
+
+    Args:
+        pdf_path (str): The path to save the signed PDF file.
+        writer (PdfWriter): The PdfWriter object containing the signed content.
+        progress_signal (optional): A signal to emit progress updates.
+
+    """
+    with Path.open(pdf_path, "wb") as f:
+        writer.write(f)
+
+    if progress_signal:
+        progress_signal.emit("Finalizing process...", 95)
+    time.sleep(0.5)
+    logger.info("PDF File successfully signed: %s", pdf_path)
 
 def read_pdf_metadata(pdf_path: str, progress_signal=None):
     """
@@ -266,23 +286,17 @@ def read_pdf_metadata(pdf_path: str, progress_signal=None):
 
 def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
     """
-    Prepares an unsigned PDF by removing the signature metadata and returning the SHA256 hash of the PDF content.
+    Creates a temporary unsigned version of the PDF for signature verification.
 
     Args:
-        reader (PdfReader): The PDF reader object containing the PDF to be processed.
-        pdf_path (str): The file path of the original PDF.
-        progress_signal (Signal, optional): A signal object to emit progress updates. Defaults to None.
+        reader (PdfReader): The PdfReader object of the original PDF.
+        pdf_path (str): The path to the original PDF file.
+        progress_signal (optional): A signal to emit progress updates.
 
     Returns:
-        SHA256: The SHA256 hash of the unsigned PDF content.
-
-    Raises:
-        Exception: If there is an error processing the PDF file.
+        SHA256.SHA256Hash: The hash of the unsigned PDF content.
 
     """
-    metadata = reader.metadata.copy()
-    del metadata["/Signature"]
-    del metadata["/Producer"]
     writer = PdfWriter()
 
     if progress_signal:
@@ -292,7 +306,6 @@ def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
     try:
         for page in reader.pages:
             writer.add_page(page)
-        writer.add_metadata(metadata)
 
         temp_pdf_path = pdf_path.replace(".pdf", "_temp.pdf")
         with Path.open(temp_pdf_path, "wb") as f:
@@ -301,7 +314,6 @@ def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
         with Path.open(temp_pdf_path, "rb") as f:
             pdf_content = f.read()
 
-        Path(temp_pdf_path).unlink(missing_ok=True)
         return SHA256.new(pdf_content)
     except Exception:
         logger.exception("Error processing PDF file: %s", pdf_path)
