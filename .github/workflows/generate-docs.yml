@@ -1,7 +1,7 @@
 name: Generate PDF documentation
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -45,6 +45,8 @@ jobs:
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'actions@github.com'
+          git fetch origin ${{ github.head_ref }}:${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
           git add docs/documentation.pdf
           git commit -m "Update generated PDF documentation"
-          git push --force
+          git push origin ${{ github.head_ref }}
