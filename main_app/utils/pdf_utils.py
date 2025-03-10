@@ -140,6 +140,16 @@ def read_pdf_file(pdf_path: str):
         return f.read()
 
 def clear_signature_metadata(pdf_path: str):
+    """
+    Removes signature metadata from the PDF file.
+
+    Args:
+        pdf_path (str): The path to the PDF file.
+
+    Returns:
+        str: The path to the cleaned PDF file.
+
+    """
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
 
@@ -193,6 +203,18 @@ def create_signature(rsa_key: RSA.RsaKey, pdf_hash, progress_signal=None):
     return signature
 
 def add_signature_to_pdf(pdf_path, signature: bytes, progress_signal=None):
+    """
+    Adds a digital signature to the metadata of the PDF file.
+
+    Args:
+        pdf_path (str): The path to the PDF file.
+        signature (bytes): The digital signature to be added.
+        progress_signal (optional): A signal to emit progress updates.
+
+    Returns:
+        str: The path to the signed PDF file.
+
+    """
     reader = PdfReader(pdf_path)
     writer = PdfWriter()
 
@@ -215,6 +237,15 @@ def add_signature_to_pdf(pdf_path, signature: bytes, progress_signal=None):
     return pdf_path
 
 def save_signed_pdf(pdf_path: str, writer, progress_signal=None):
+    """
+    Saves the signed PDF file.
+
+    Args:
+        pdf_path (str): The path to save the signed PDF file.
+        writer (PdfWriter): The PdfWriter object containing the signed content.
+        progress_signal (optional): A signal to emit progress updates.
+
+    """
     with Path.open(pdf_path, "wb") as f:
         writer.write(f)
 
@@ -254,6 +285,18 @@ def read_pdf_metadata(pdf_path: str, progress_signal=None):
         raise
 
 def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
+    """
+    Creates a temporary unsigned version of the PDF for signature verification.
+
+    Args:
+        reader (PdfReader): The PdfReader object of the original PDF.
+        pdf_path (str): The path to the original PDF file.
+        progress_signal (optional): A signal to emit progress updates.
+
+    Returns:
+        SHA256.SHA256Hash: The hash of the unsigned PDF content.
+
+    """
     writer = PdfWriter()
 
     if progress_signal:
