@@ -9,6 +9,7 @@ jobs:
   lint:
     name: Run Ruff
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.changed_files > 0 && github.event.pull_request.files.*.filename == '*.py' }}
 
     steps:
       - name: Checkout repository
