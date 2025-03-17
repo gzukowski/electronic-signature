@@ -37,7 +37,6 @@ class DriveManager:
 
         """
         self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
-        self.drive_list = [disk.device for disk in psutil.disk_partitions()]
         #logger.info("Detected devices: %s", self.drive_list)
 
     def list_drives_with_keys(self) -> list[str]:
@@ -47,7 +46,6 @@ class DriveManager:
 
         """
         self.drive_list = [disk.device for disk in psutil.disk_partitions() if "removable" in disk.opts]
-        self.drive_list = [disk.device for disk in psutil.disk_partitions()]
 
         return [
             drive for drive in self.drive_list
