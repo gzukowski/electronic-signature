@@ -313,6 +313,8 @@ def prepare_unsigned_pdf(reader, pdf_path: str, progress_signal=None):
 
         with Path.open(temp_pdf_path, "rb") as f:
             pdf_content = f.read()
+        
+        Path(temp_pdf_path).unlink()
 
         return SHA256.new(pdf_content)
     except Exception:
