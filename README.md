@@ -45,4 +45,35 @@ This project aims to develop a software tool that emulates a **qualified electro
 3. **Signature Verification**:
    - Use the public key to verify the document’s authenticity and integrity through the main application.
 
+## 🚀 Running the Project with Virtual Environment (venv)
+
+To ensure dependencies are installed in an isolated environment, follow these steps:
+
+### 1️⃣ Create and Activate Virtual Environment  
+#### On Linux/macOS:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+#### On Windows:
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 2️⃣ Install Required Dependencies  
+```bash
+pip install -r requirements.txt
+```
+
+### 3️⃣ Run the Auxiliary Application  
+```bash
+python auxiliary_app/main.py
+```
+### 4️⃣ Run the Main Application  
+```bash
+python main_app/main.py
+```
 ---
+
+This setup ensures a clean and reproducible environment for running the PAdES signing tool.
